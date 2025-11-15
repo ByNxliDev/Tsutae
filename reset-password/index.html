@@ -149,6 +149,25 @@
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmbGdudGZ0d2V3eXB1Y29yemRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMDQ0MjEsImV4cCI6MjA3ODY4MDQyMX0.NAUe7rxPipe7rFhMbCoO4JrG6jUoNs008RSoyPioJBc'
         );
 
+        window.addEventListener('load', async () => {
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
+            
+            if (accessToken) {
+                try {
+                    await supabaseClient.auth.setSession({
+                        access_token: accessToken,
+                        refresh_token: refreshToken || ''
+                    });
+                } catch (error) {
+                    showMessage('Error al establecer sesión: ' + error.message, 'error');
+                }
+            } else {
+                showMessage('Token de acceso no encontrado en la URL', 'error');
+            }
+        });
+
         function showMessage(text, type) {
             const msg = document.getElementById('message');
             msg.textContent = text;
