@@ -150,21 +150,33 @@
         );
 
         window.addEventListener('load', async () => {
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            const accessToken = hashParams.get('access_token');
-            const refreshToken = hashParams.get('refresh_token');
+            const fragment = window.location.hash.substring(1);
+            const params = new URLSearchParams(fragment);
             
-            if (accessToken) {
+            const accessToken = params.get('access_token');
+            const refreshToken = params.get('refresh_token');
+            const type = params.get('type');
+            
+            console.log('Access Token:', accessToken);
+            console.log('Type:', type);
+            
+            if (accessToken && type === 'recovery') {
                 try {
-                    await supabaseClient.auth.setSession({
+                    const { data, error } = await supabaseClient.auth.setSession({
                         access_token: accessToken,
-                        refresh_token: refreshToken || ''
+                        refresh_token: refreshToken || accessToken
                     });
+                    
+                    if (error) {
+                        showMessage('Error: ' + error.message, 'error');
+                    } else {
+                        console.log('Sesión establecida correctamente');
+                    }
                 } catch (error) {
                     showMessage('Error al establecer sesión: ' + error.message, 'error');
                 }
             } else {
-                showMessage('Token de acceso no encontrado en la URL', 'error');
+                showMessage('Link inválido o expirado. Solicita un nuevo enlace.', 'error');
             }
         });
 
@@ -210,7 +222,7 @@
                 } else {
                     showMessage('¡Contraseña actualizada exitosamente!', 'success');
                     setTimeout(() => {
-                        window.location.href = 'com.naxawave.tsutae://login-callback';
+                        window.close();
                     }, 2000);
                 }
             } catch (e) {
